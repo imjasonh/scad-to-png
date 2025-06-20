@@ -112,8 +112,8 @@ function renderStlToPng(stlBuffer, viewConfig, outputPath, width, height) {
   }
 }
 
-function generateReadme(scadFileName, stlFileName, views) {
-  const timestamp = new Date().toISOString();
+function generateReadme(scadFileName, stlFileName, views, scadFileMtime) {
+  const timestamp = scadFileMtime.toISOString();
   
   let content = `# ${scadFileName} - Rendered Output\n\n`;
   content += `Generated on: ${timestamp}\n\n`;
@@ -140,6 +140,10 @@ async function main() {
       console.error(`Error: Input file '${inputFile}' not found`);
       process.exit(1);
     }
+    
+    // Get file stats for modification time
+    const stats = await fs.stat(inputFile);
+    const scadFileMtime = stats.mtime;
     
     // Read SCAD file
     const scadContent = await fs.readFile(inputFile, 'utf8');
@@ -189,7 +193,7 @@ async function main() {
     
     // Generate README.md with embedded images
     const readmePath = path.join(options.output, 'README.md');
-    const readmeContent = generateReadme(path.basename(inputFile), stlFileName, views);
+    const readmeContent = generateReadme(path.basename(inputFile), stlFileName, views, scadFileMtime);
     await fs.writeFile(readmePath, readmeContent);
     console.log('Generated README.md');
     
