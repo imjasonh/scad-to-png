@@ -1,0 +1,9 @@
+repos:
+  - repo: local
+    hooks:
+      - id: regenerate-examples
+        name: Regenerate example outputs
+        entry: ./regenerate-examples.sh
+        language: script
+        pass_filenames: false
+        always_run: true

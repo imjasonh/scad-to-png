@@ -1,0 +1,36 @@
+name: Pre-commit checks
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v4
+    
+    - name: Set up Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        
+    - name: Install dependencies
+      run: npm install
+      
+    - name: Run regenerate-examples.sh
+      run: ./regenerate-examples.sh
+      
+    - name: Check for uncommitted changes
+      run: |
+        if [[ -n $(git status --porcelain) ]]; then
+          echo "Error: regenerate-examples.sh produced changes that were not committed:"
+          git status --porcelain
+          git diff
+          echo ""
+          echo "Please run './regenerate-examples.sh' locally and commit the changes."
+          exit 1
+        fi

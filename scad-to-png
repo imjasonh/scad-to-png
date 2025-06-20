@@ -1,0 +1,166 @@
+#!/usr/bin/env node
+
+import { program } from 'commander';
+import fs from 'fs-extra';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { renderSTL } from './stl-renderer.mjs';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+
+program
+  .argument('<input>', 'OpenSCAD file to convert')
+  .option('-o, --output <dir>', 'Output directory', 'output')
+  .option('-w, --width <width>', 'Image width', '800')
+  .option('-h, --height <height>', 'Image height', '600')
+  .parse(process.argv);
+
+const options = program.opts();
+const inputFile = program.args[0];
+
+async function convertScadToStl(scadContent) {
+  // Create a wrapper script to handle the CommonJS/ES module issue
+  const wrapperScript = `
+const fs = require('fs');
+
+// Load OpenSCAD module  
+const factory = require('./openscad-wasm-dist/openscad.js');
+
+// Initialize with proper options
+factory({
+  noInitialRun: true,
+  print: (text) => console.log(text),
+  printErr: (text) => console.error(text)
+}).then(Module => {
+  try {
+    // Read input
+    const scadContent = fs.readFileSync(process.argv[2], 'utf8');
+    console.log('Read SCAD file, length:', scadContent.length);
+
+    // Ensure /tmp directory exists
+    try {
+      Module.FS.mkdir('/tmp');
+    } catch (e) {
+      // Directory might already exist
+    }
+
+    // Write to virtual filesystem
+    Module.FS.writeFile('/tmp/input.scad', scadContent);
+    console.log('Wrote to virtual filesystem');
+
+    // Convert to STL
+    console.log('Running OpenSCAD...');
+    const result = Module.callMain(['/tmp/input.scad', '-o', '/tmp/output.stl']);
+    console.log('OpenSCAD completed with code:', result);
+
+    // Read the STL and write to output
+    try {
+      const stlData = Module.FS.readFile('/tmp/output.stl');
+      console.log('Read STL data, length:', stlData.length);
+      fs.writeFileSync(process.argv[3], stlData);
+      console.log('Wrote STL file');
+    } catch (e) {
+      console.error('Failed to read output file:', e.message);
+      // List files to debug
+      const files = Module.FS.readdir('/tmp');
+      console.log('Files in /tmp:', files);
+    }
+  } catch (e) {
+    console.error('Error:', e.message);
+    if (e.errno) console.error('Errno:', e.errno);
+    process.exit(1);
+  }
+}).catch(e => {
+  console.error('Failed to initialize OpenSCAD:', e);
+  process.exit(1);
+});
+`;
+
+  // Write files
+  const tempScadFile = 'temp-input.scad';
+  const tempStlFile = 'temp-output.stl';
+  
+  // Don't recreate wrapper - use the existing one
+  // await fs.writeFile('openscad-wrapper.cjs', wrapperScript);
+  await fs.writeFile(tempScadFile, scadContent);
+  
+  // Run the wrapper
+  const { execSync } = await import('child_process');
+  execSync(`node openscad-wrapper.mjs ${tempScadFile} ${tempStlFile}`, { stdio: 'inherit' });
+  
+  // Read the result
+  const stlData = await fs.readFile(tempStlFile);
+  
+  // Clean up
+  // Don't delete the wrapper - it's persistent now
+  // await fs.unlink('openscad-wrapper.cjs');
+  await fs.unlink(tempScadFile);
+  await fs.unlink(tempStlFile);
+  
+  return stlData;
+}
+
+function renderStlToPng(stlBuffer, viewConfig, outputPath, width, height) {
+  try {
+    const pngBuffer = renderSTL(stlBuffer, viewConfig, width, height);
+    fs.writeFileSync(outputPath, pngBuffer);
+  } catch (error) {
+    console.error(`Error rendering ${viewConfig.name} view:`, error.message);
+  }
+}
+
+async function main() {
+  try {
+    // Check if input file exists
+    if (!fs.existsSync(inputFile)) {
+      console.error(`Error: Input file '${inputFile}' not found`);
+      process.exit(1);
+    }
+    
+    // Read SCAD file
+    const scadContent = await fs.readFile(inputFile, 'utf8');
+    
+    // Create output directory
+    await fs.ensureDir(options.output);
+    
+    console.log('Converting SCAD to STL...');
+    const stlBuffer = await convertScadToStl(scadContent);
+    
+    // Save STL file
+    const stlFileName = path.basename(inputFile, path.extname(inputFile)) + '.stl';
+    const stlPath = path.join(options.output, stlFileName);
+    await fs.writeFile(stlPath, stlBuffer);
+    console.log(`Saved STL to ${stlPath}`);
+    
+    // Define different viewing angles
+    const views = [
+      { name: 'front', position: [0, 0, 1], distance: 1.5 },
+      { name: 'back', position: [0, 0, -1], distance: 1.5 },
+      { name: 'left', position: [-1, 0, 0], distance: 1.5 },
+      { name: 'right', position: [1, 0, 0], distance: 1.5 },
+      { name: 'top', position: [0, 1, 0], distance: 1.5 },
+      { name: 'bottom', position: [0, -1, 0], distance: 1.5 },
+      { name: 'isometric', position: [1, 1, 1], distance: 2 },
+      { name: 'isometric-alt', position: [-1, 1, 1], distance: 2 }
+    ];
+    
+    const width = parseInt(options.width);
+    const height = parseInt(options.height);
+    
+    console.log('Rendering PNG images...');
+    for (const view of views) {
+      const outputPath = path.join(options.output, `${view.name}.png`);
+      console.log(`  - ${view.name}.png`);
+      renderStlToPng(stlBuffer, view, outputPath, width, height);
+    }
+    
+    console.log(`\nSuccess! Images saved to ${options.output}/`);
+    
+  } catch (error) {
+    console.error('Error:', error.message);
+    process.exit(1);
+  }
+}
+
+main();

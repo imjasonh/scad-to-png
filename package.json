@@ -1,0 +1,34 @@
+{
+  "name": "scad-to-png",
+  "version": "1.0.0",
+  "description": "CLI tool to convert OpenSCAD files to PNG images without requiring OpenSCAD installation",
+  "type": "module",
+  "main": "scad-to-png",
+  "bin": {
+    "scad-to-png": "./scad-to-png"
+  },
+  "scripts": {
+    "test": "node scad-to-png test.scad",
+    "example:box": "node scad-to-png examples/simple-box.scad",
+    "example:gear": "node scad-to-png examples/gear.scad"
+  },
+  "keywords": [
+    "openscad",
+    "stl",
+    "png",
+    "3d",
+    "rendering",
+    "wasm",
+    "cli"
+  ],
+  "author": "Jason Hall",
+  "license": "Apache-2.0",
+  "dependencies": {
+    "@napi-rs/canvas": "^0.1.71",
+    "commander": "^12.0.0",
+    "fs-extra": "^11.2.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

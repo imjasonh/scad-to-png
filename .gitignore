@@ -1,0 +1,5 @@
+node_modules/
+temp-*.scad
+temp-*.stl
+*.log
+.DS_Store
