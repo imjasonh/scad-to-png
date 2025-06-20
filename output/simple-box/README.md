@@ -1,11 +1,11 @@
-# 15-parametric-grill.scad - Rendered Output
+# simple-box.scad - Rendered Output
 
-Generated on: 2025-06-20T23:30:56.634Z
+Generated on: 2025-06-20T23:32:35.342Z
 
 ## 3D Model
 
-- **Source**: 15-parametric-grill.scad
-- **STL**: [15-parametric-grill.stl](./15-parametric-grill.stl)
+- **Source**: simple-box.scad
+- **STL**: [simple-box.stl](./simple-box.stl)
 
 ## Rendered Views
 
