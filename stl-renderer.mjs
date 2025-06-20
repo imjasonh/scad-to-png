@@ -128,8 +128,8 @@ export function renderSTL(stlBuffer, viewConfig, width, height) {
   // Set up camera based on view config
   const camera = {
     target: [centerX, centerY, centerZ],
-    distance: size * viewConfig.distance * 2,
-    scale: Math.min(width, height) * 0.8,
+    distance: size * viewConfig.distance * 0.9,
+    scale: Math.min(width, height) * 1.2,
     rotation: [
       Math.atan2(viewConfig.position[1], Math.sqrt(viewConfig.position[0]**2 + viewConfig.position[2]**2)),
       Math.atan2(viewConfig.position[0], viewConfig.position[2])
