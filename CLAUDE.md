@@ -52,6 +52,15 @@ Since WebGL is not easily available in Node.js, the project implements a softwar
    - `node-canvas` requires complex native dependencies
    - Solution: Use `@napi-rs/canvas` which has better cross-platform support
 
+4. **Font Support Issues**
+   - OpenSCAD WASM cannot access system fonts in the Node.js environment
+   - The `text()` function will fail with "Can't get font" errors
+   - Solution: Skip text-based tests or document as a known limitation
+
+5. **README Generation**
+   - The tool now automatically generates README.md files with embedded images
+   - Each output directory gets a README for easy web viewing on GitHub
+
 ## Project Structure
 
 ```
@@ -63,7 +72,10 @@ scad-to-png/
 │   ├── openscad.js          # Emscripten-generated JS wrapper
 │   └── openscad.wasm        # WebAssembly binary
 ├── test.scad                # Test file with cube, cylinder hole, and sphere
-└── output/                  # Generated PNG files
+├── examples/                # Example SCAD files
+├── test-suite/              # Comprehensive test suite (40+ test files)
+├── generate-test-suite.sh   # Script to regenerate all test outputs
+└── output/                  # Generated PNG, STL, and README files
 ```
 
 ## Development Guidelines
@@ -90,6 +102,8 @@ Test with various OpenSCAD files:
 - Complex models with many triangles
 - Both ASCII and binary STL outputs
 - Parametric models with different parameter values
+- Run `./generate-test-suite.sh` to regenerate all test outputs
+- Check `test-suite/` directory for comprehensive test coverage
 
 ### Future Improvements
 
@@ -120,12 +134,25 @@ Test with various OpenSCAD files:
 
 4. **Rendering Issues**: Export projected 2D coordinates to verify the projection math
 
+5. **Test Suite Failures**: Check individual test output directories for error messages and limitation README files
+
 ## Dependencies
 
 - `commander`: CLI argument parsing
 - `fs-extra`: Enhanced file system operations
 - `@napi-rs/canvas`: Cross-platform canvas implementation
 - No direct OpenSCAD dependency - uses WASM build
+
+## Known Limitations (from Test Suite)
+
+Based on our comprehensive test suite, the following limitations have been identified:
+
+1. **Text Rendering** (test 09): The `text()` function fails due to font access issues in WASM
+2. **Import Functions** (test 36): Cannot import external STL/DXF files in WASM environment
+3. **Mesh Deformation** (test 37): Complex mesh operations may produce non-closed meshes
+4. **File I/O** (test 38): No support for reading/writing external files
+5. **Advanced Features** (test 39): Some experimental features not available in WASM
+6. **System Integration** (test 40): No access to system resources or external commands
 
 ## Related Projects
 

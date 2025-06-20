@@ -14,7 +14,7 @@ A CLI tool that converts OpenSCAD files to PNG images from multiple viewpoints w
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/scad-to-png.git
+git clone https://github.com/imjasonh/scad-to-png.git
 cd scad-to-png
 
 # Install dependencies
@@ -66,7 +66,7 @@ Options:
 
 ## Output
 
-The tool generates 8 PNG images and an STL file in the output directory:
+The tool generates 8 PNG images, an STL file, and a README in the output directory:
 - `<filename>.stl` - The 3D model in STL format
 - `front.png` - Front view
 - `back.png` - Back view
@@ -76,6 +76,7 @@ The tool generates 8 PNG images and an STL file in the output directory:
 - `bottom.png` - Bottom view
 - `isometric.png` - Isometric view
 - `isometric-alt.png` - Alternative isometric view
+- `README.md` - Markdown file with embedded images for easy web viewing
 
 ## How It Works
 
@@ -125,6 +126,8 @@ scad-to-png
 - Large STL files may take longer to render
 - No support for materials or textures (uses simple grayscale shading)
 - OpenSCAD WASM may have different behavior than native OpenSCAD for some edge cases
+- Text rendering is not supported (OpenSCAD WASM limitation due to font dependencies)
+- Some advanced OpenSCAD features may not work in the WASM environment
 
 ## Use Cases
 
