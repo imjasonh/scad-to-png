@@ -14,12 +14,13 @@ program
   .option('-o, --output <dir>', 'Output directory', 'output')
   .option('-w, --width <width>', 'Image width', '800')
   .option('-h, --height <height>', 'Image height', '600')
+  .option('-D, --define <params...>', 'OpenSCAD parameters (e.g., -D size=10 -D holes=true)')
   .parse(process.argv);
 
 const options = program.opts();
 const inputFile = program.args[0];
 
-async function convertScadToStl(scadContent) {
+async function convertScadToStl(scadContent, params = []) {
   // Create a wrapper script to handle the CommonJS/ES module issue
   const wrapperScript = `
 const fs = require('fs');
@@ -87,7 +88,8 @@ factory({
   
   // Run the wrapper
   const { execSync } = await import('child_process');
-  execSync(`node openscad-wrapper.mjs ${tempScadFile} ${tempStlFile}`, { stdio: 'inherit' });
+  const paramsStr = params.join(' ');
+  execSync(`node openscad-wrapper.mjs ${tempScadFile} ${tempStlFile} ${paramsStr}`, { stdio: 'inherit' });
   
   // Read the result
   const stlData = await fs.readFile(tempStlFile);
@@ -125,7 +127,16 @@ async function main() {
     await fs.ensureDir(options.output);
     
     console.log('Converting SCAD to STL...');
-    const stlBuffer = await convertScadToStl(scadContent);
+    
+    // Prepare OpenSCAD parameters
+    const openscadParams = [];
+    if (options.define) {
+      for (const param of options.define) {
+        openscadParams.push('-D', param);
+      }
+    }
+    
+    const stlBuffer = await convertScadToStl(scadContent, openscadParams);
     
     // Save STL file
     const stlFileName = path.basename(inputFile, path.extname(inputFile)) + '.stl';

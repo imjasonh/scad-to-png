@@ -8,9 +8,10 @@ const __dirname = path.dirname(__filename);
 // Read arguments
 const inputFile = process.argv[2];
 const outputFile = process.argv[3];
+const additionalArgs = process.argv.slice(4);
 
 if (!inputFile || !outputFile) {
-  console.error('Usage: node openscad-wrapper.mjs <input.scad> <output.stl>');
+  console.error('Usage: node openscad-wrapper.mjs <input.scad> <output.stl> [openscad args...]');
   process.exit(1);
 }
 
@@ -62,7 +63,12 @@ try {
   
   // Run OpenSCAD
   console.log('Running OpenSCAD...');
-  const args = ['/tmp/input.scad', '-o', '/tmp/output.stl', '--export-format=asciistl'];
+  const args = ['/tmp/input.scad', '-o', '/tmp/output.stl', '--export-format=asciistl', ...additionalArgs];
+  
+  if (additionalArgs.length > 0) {
+    console.log('With parameters:', additionalArgs.join(' '));
+  }
+  
   const exitCode = instance.callMain(args);
   
   console.log('OpenSCAD completed with exit code:', exitCode);

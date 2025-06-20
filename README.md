@@ -41,20 +41,27 @@ This will:
 ./scad-to-png <input> [options]
 
 Options:
-  -o, --output <dir>     Output directory (default: "output")
-  -w, --width <width>    Image width (default: "800")
-  -h, --height <height>  Image height (default: "600")
-  --help                 Display help
+  -o, --output <dir>          Output directory (default: "output")
+  -w, --width <width>         Image width (default: "800")
+  -h, --height <height>       Image height (default: "600")
+  -D, --define <params...>    OpenSCAD parameters (e.g., -D size=10 -D holes=true)
+  --help                      Display help
 ```
 
 ### Example
 
 ```bash
-# Convert a cube with a hole
-./scad-to-png examples/cube-with-hole.scad
+# Convert a simple box
+./scad-to-png examples/simple-box.scad
 
 # Specify custom output directory and size
 ./scad-to-png my-model.scad -o renders -w 1024 -h 768
+
+# Use parametric models with custom values
+./scad-to-png examples/parametric-box.scad -D width=30 -D height=20 -D has_lid=true
+
+# Multiple parameters with different types
+./scad-to-png model.scad -D size=25 -D text=\"Hello\" -D show_debug=false
 ```
 
 ## Output

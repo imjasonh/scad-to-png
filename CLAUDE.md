@@ -28,6 +28,8 @@ The most challenging part of this project was getting OpenSCAD WASM to work in a
 
 3. **File System**: Uses Emscripten's virtual file system. Files must be written before calling `callMain()`.
 
+4. **Parametric Support**: OpenSCAD parameters can be passed using the `-D` flag, which works identically to the native OpenSCAD CLI. Example: `-D width=30 -D text="Hello"`
+
 ### STL Rendering
 
 Since WebGL is not easily available in Node.js, the project implements a software renderer:
@@ -87,6 +89,7 @@ Test with various OpenSCAD files:
 - Boolean operations (union, difference, intersection)
 - Complex models with many triangles
 - Both ASCII and binary STL outputs
+- Parametric models with different parameter values
 
 ### Future Improvements
 
