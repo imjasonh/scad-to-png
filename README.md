@@ -1,6 +1,16 @@
 # scad-to-png
 
-A CLI tool that converts OpenSCAD files to PNG images from multiple viewpoints without requiring OpenSCAD to be installed. This tool uses OpenSCAD WASM to convert .scad files to STL, then renders the STL to PNG images from 8 different angles.
+AI agents seem to be good at _generating code_, and even seem pretty good at _understanding two-dimensional pictures_ (PNG, JPG, GIF). They don't seem to be good at understanding 3D objects described in standard formats like STL. [OpenSCAD](https://openscad.org/) is a format for describing parametric 3D objects, and a tool to execute that code and generate STL files.
+
+This project attempts to bridge the gap by providing a simple, relatively quick tool to execute code in a SCAD file, generate an STL, and generate a variety of PNGs of the resulting 3D object seem from a number of angles.
+
+It aims to do this without requiring the relatively heavy-weight OpenSCAD tool to be installed, by instead relying on its WASM port, and a pure software STL-to-PNG renderer.
+
+The idea is that, with some work, this tool could be used with AI agents to
+
+1. generate OpenSCAD code
+2. generate STLs and PNGs that the AI agent can view and understand
+3. iterate toward some goal based on that feedback loop
 
 ## Features
 
